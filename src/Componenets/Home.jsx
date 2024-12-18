@@ -57,6 +57,7 @@ const ECommerceLayout = () => {
           data: doc.data(),
         };
       });
+      console.log(getExpenses);
 
       setProducts(getExpenses);
       setResults(getExpenses);

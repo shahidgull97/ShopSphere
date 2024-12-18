@@ -36,7 +36,7 @@ function Navbar() {
               type="text"
               placeholder="Search products..."
               value={searchTerm}
-              className="w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 bg-white  bg-opacity-20  backdrop-blur-sm placeholder-white py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               onChange={(e) => dispatch(searchQuery(e.target.value))}
             />
             <Search className="absolute right-4 top-3 text-gray-400" />
@@ -46,7 +46,7 @@ function Navbar() {
           <nav className="hidden md:flex space-x-4">
             <Link
               to={isLoggedIn ? "/myorders" : "/signup"}
-              className="hover:bg-gray-100 p-2 rounded-full flex  text-blue-700 font-bold"
+              className="hover:bg-gray-100 p-2 rounded-full flex text-blue-700 font-bold"
               onClick={() => (isLoggedIn ? dispatch(fetchOrdersThunk()) : "")}
             >
               <Heart className="text-blue-700" font-bold />

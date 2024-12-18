@@ -27,6 +27,12 @@ function Carasoule() {
       description: "Upgrade your living space",
       buttonText: "Browse Collection",
     },
+    {
+      image: "/Images/apparel.jpg",
+      title: "Home Essentials Collection",
+      description: "Upgrade your living space",
+      buttonText: "Browse Collection",
+    },
   ];
 
   // Auto-slide functionality
