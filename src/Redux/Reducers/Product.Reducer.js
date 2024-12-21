@@ -187,7 +187,7 @@ export const fetchOrdersThunk = createAsyncThunk(
         newOrders[orderDate].push({
           items: data.items, // Array of items
           totalAmount: data.totalAmount, // Total amount
-          orderStatus: "Delivered",
+          orderStatus: "Processing",
           orderId: "ORD" + data.orderDate.replace(/[\/\s:\-]/g, ""),
         });
       });
