@@ -9,12 +9,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { toggelLogin } from "../Redux/Reducers/User.Reducer";
 import { useNavigate } from "react-router-dom";
+import { allProducts } from "../Redux/Reducers/Product.Reducer";
 
-import {
-  categorySelector,
-  searchSelector,
-  fetchItem,
-} from "../Redux/Reducers/Product.Reducer";
+import { fetchItem } from "../Redux/Reducers/Product.Reducer";
 
 import GridApp from "./Spinner";
 
@@ -26,9 +23,6 @@ const ECommerceLayout = () => {
   // This is used to get data from firestore database on initial render
   const dispatch = useDispatch();
   //   const activeCategory = useSelector(categorySelector);
-  const searchTerm = useSelector(searchSelector);
-
-  console.log(products);
 
   function handleItem(item) {
     dispatch(fetchItem(item));
@@ -61,33 +55,29 @@ const ECommerceLayout = () => {
 
       setProducts(getExpenses);
       setResults(getExpenses);
+      dispatch(allProducts(getExpenses));
     });
   }, []);
 
   // Real time searching of products based on search text price range and catagory
   useEffect(() => {
-    if (!searchTerm && activeCategory == "all") {
+    if (activeCategory == "all") {
       // If no filters are applied, show all products
       setProducts(results);
-      console.log("no filters");
     } else {
       // Apply filters
       const filteredProducts = results.filter((product) => {
-        const matchesSearch =
-          !searchTerm.trim() ||
-          product.data.title.toLowerCase().includes(searchTerm.toLowerCase());
-
         const matchesCategory =
           activeCategory == "all"
             ? true
             : activeCategory == product.data.category;
         console.log(matchesCategory);
 
-        return matchesSearch && matchesCategory;
+        return matchesCategory;
       });
       setProducts(filteredProducts);
     }
-  }, [searchTerm, activeCategory, results]);
+  }, [activeCategory]);
 
   const categories = [
     { id: "All", label: "all" },
@@ -103,6 +93,7 @@ const ECommerceLayout = () => {
       {!products.length > 0 ? <GridApp /> : ""}
       <div className="min-h-screen  bg-slate-400 flex flex-col">
         <Carasoule />
+        {/* <SearchResults  /> */}
         {/* Main Content Area */}
 
         {/* Category Navigation */}

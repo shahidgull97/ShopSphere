@@ -20,8 +20,8 @@ const initialState = {
   loading: false,
   orders: {},
   totalAmount: 0,
-  searchInput: "",
   productItem: null,
+  products: [],
 };
 
 // This is to calculate the current data and time
@@ -235,14 +235,14 @@ const cartSlice = createSlice({
         0
       );
     },
-    searchQuery: (state, action) => {
-      state.searchInput = action.payload;
-    },
-
     fetchItem: (state, action) => {
       console.log(action.payload);
 
       state.productItem = action.payload;
+    },
+
+    allProducts: (state, action) => {
+      state.products = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -271,12 +271,18 @@ const cartSlice = createSlice({
 // Export the actions and reducer
 
 export const cartReducer = cartSlice.reducer;
-export const { fetchCartItemsAction, searchQuery, setCatagory, fetchItem } =
-  cartSlice.actions;
+export const {
+  fetchCartItemsAction,
+
+  setCatagory,
+  fetchItem,
+  allProducts,
+} = cartSlice.actions;
 
 export const cartSelector = (state) => state.cartReducer.cartItems;
 export const orderSelector = (state) => state.cartReducer.orders;
 export const totalPriceSelector = (state) => state.cartReducer.totalAmount;
 export const categorySelector = (state) => state.cartReducer.category;
-export const searchSelector = (state) => state.cartReducer.searchInput;
+
 export const itemSelector = (state) => state.cartReducer.productItem;
+export const productsSelector = (state) => state.cartReducer.products;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Home, ShoppingCart, User, Search, Heart, Menu, X } from "lucide-react";
 import { Outlet, Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,23 +8,44 @@ import {
   fetchCartItemsThunk,
   fetchOrdersThunk,
 } from "../Redux/Reducers/Product.Reducer";
-import { searchQuery } from "../Redux/Reducers/Product.Reducer";
-import { searchSelector } from "../Redux/Reducers/Product.Reducer";
 
+import SearchResults from "./SearchResults";
+import { productsSelector } from "../Redux/Reducers/Product.Reducer";
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   //   const [activeCategory, setActiveCategory] = useState("all");
-  //   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchedProducts, setSearchedProducts] = useState([]);
   const { isLoggedIn } = useSelector(userSelector);
   console.log(isLoggedIn);
   const dispatch = useDispatch();
+  const products = useSelector(productsSelector);
 
-  const searchTerm = useSelector(searchSelector);
+  // const searchTerm = useSelector(searchSelector);
+
+  // Real time searching of products based on search text price range and catagory
+  useEffect(() => {
+    if (!searchTerm) {
+      // If no filters are applied, show all products
+      setSearchedProducts([]);
+      console.log("no filters");
+    } else {
+      // Apply filters
+      const filteredProducts = products.filter((product) => {
+        const matchesSearch =
+          !searchTerm.trim() ||
+          product.data.title.toLowerCase().includes(searchTerm.toLowerCase());
+
+        return matchesSearch;
+      });
+      setSearchedProducts(filteredProducts);
+    }
+  }, [searchTerm]);
 
   return (
     <>
       {/* Top Navigation Bar */}
-      <header className=" bg-cover bg-center bg-opacity-50 backdrop-blur-sm  w-full h-16  items-center justify-center shadow-md fixed top-0 left-0 right-0 z-50">
+      <header className=" bg-cover bg-center bg-opacity-50   w-full h-16  items-center justify-center shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
           <Link to={"/"}>
@@ -37,9 +58,13 @@ function Navbar() {
               placeholder="Search products..."
               value={searchTerm}
               className="w-full px-4 bg-white  bg-opacity-20  backdrop-blur-sm placeholder-white py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => dispatch(searchQuery(e.target.value))}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Search className="absolute right-4 top-3 text-gray-400" />
+            <SearchResults
+              searchedProducts={searchedProducts}
+              setSearchedProducts={setSearchedProducts}
+            />
           </div>
 
           {/* Navigation Icons */}
@@ -106,6 +131,7 @@ function Navbar() {
           </div>
         </div>
       )}
+
       <Outlet />
     </>
   );
