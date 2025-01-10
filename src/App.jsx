@@ -24,7 +24,7 @@ function App() {
           element: <ECommerceLayout />,
         },
         { path: "/signup", element: <SignUp /> },
-        { path: "/item", element: <ItemDetailPage /> },
+        { path: "/item/:id", element: <ItemDetailPage /> },
         { path: "/cart", element: <CartPage /> },
         { path: "/myorders", element: <OrdersPage /> },
       ],

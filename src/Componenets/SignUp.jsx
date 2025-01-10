@@ -14,10 +14,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { auth, db } from "../Config/firebasedb";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { useSelector, useDispatch } from "react-redux";
 import { userSelector } from "../Redux/Reducers/User.Reducer";
 import { signInThunk } from "../Redux/Reducers/User.Reducer";
@@ -38,38 +34,23 @@ function SignUp() {
 
   function handleSignIn(e) {
     e.preventDefault();
-    dispatch(signInThunk(formData))
-      .unwrap()
-      .then(() => {
-        // Navigate after successful sign-in
-        navigate("/");
-      })
-      .catch((error) => {
-        console.log(error);
+    if (isLogin) {
+      dispatch(signInThunk(formData))
+        .unwrap()
+        .then(() => {
+          // Navigate after successful sign-in
+          navigate("/");
+        })
+        .catch((error) => {
+          console.log(error);
 
-        toast.error(error.message); // Handle any error in the sign-in process
-      });
+          toast.error(error.message); // Handle any error in the sign-in process
+        });
+    } else {
+      signUp();
+    }
   }
 
-  // This is a sign function in firestore with inbuild authentication
-  //   const signIn = async (e) => {
-  //     e.preventDefault();
-  //     try {
-  //       const userCredential = await signInWithEmailAndPassword(
-  //         auth,
-  //         formData.email,
-  //         formData.password
-  //       );
-  //       const user = userCredential.user;
-  //       setIsLogin(true);
-  //       navigate("/");
-
-  //       toast.success("SignIn Successfull");
-  //     } catch (error) {
-  //       toast.error(error.message);
-  //       console.error("Error signing in:", error.message);
-  //     }
-  //   };
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -77,42 +58,32 @@ function SignUp() {
     });
   };
 
-  //   const handleInputChange = (e) => {
-  //     const { name, value } = e.target;
-  //     setFormData((prevState) => ({
-  //       ...prevState,
-  //       [name]: value,
-  //     }));
-  //   };
-
-  //   const handleSubmit = (e) => {
-  //     e.preventDefault();
-  //     // Implement your authentication logic here
-  //     console.log(formData);
-  //   };
-
-  // This is function to sign up user on firestore
-  const signUp = async (e) => {
-    e.preventDefault();
+  const signUp = async () => {
     try {
-      // Create user in Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
+      const response = await fetch(
+        "https://shopsphere-backend-z0dv.onrender.com/api/shopsphere/user/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.username,
+            email: formData.email,
+            password: formData.password,
+          }),
+        }
       );
-      const user = userCredential.user;
-
-      // Save user details in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        ...formData, // Additional fields like name, phone, etc.
-        createdAt: new Date(),
-      });
-      navigate("/signin");
+      if (!response.ok) {
+        // Extract error message from backend
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Something went wrong");
+      }
+      setIsLogin(!isLogin);
       toast.success("SignUn Successfull");
     } catch (error) {
       toast.error(error.message);
+      console.log(error.message);
     }
   };
 

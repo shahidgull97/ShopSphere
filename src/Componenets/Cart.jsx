@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Trash2,
   Plus,
@@ -10,48 +10,30 @@ import {
   Truck,
 } from "lucide-react";
 import {
-  cartSelector,
-  fetchCartItemsAction,
   removeCartItemThunk,
   addOrderThunk,
   clearUserCartThunk,
   fetchOrdersThunk,
-  totalPriceSelector,
   addToCartThunk,
+  fetchCartItemsThunk,
 } from "../Redux/Reducers/Product.Reducer";
+import { cartSelector } from "../Redux/Reducers/Product.Reducer";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import GridApp from "./Spinner";
 
 const CartPage = () => {
-  const [shipping, setShipping] = useState(15);
-  //   const [cartItems, setCartItems] = useState([
-  //     {
-  //       id: 1,
-  //       name: "Modern Wireless Headphones",
-  //       price: 199.99,
-  //       quantity: 1,
-  //       image: "/api/placeholder/300/300",
-  //       color: "Midnight Black",
-  //       size: "Standard",
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Leather Laptop Backpack",
-  //       price: 129.99,
-  //       quantity: 2,
-  //       image: "/api/placeholder/300/300",
-  //       color: "Vintage Brown",
-  //       size: "Large",
-  //     },
-  //   ]);
+  const [updateCartItems, setUpdateCartItems] = useState(false);
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchCartItemsThunk());
+  }, [updateCartItems]);
+
   const cartItems = useSelector(cartSelector);
-  console.log(cartItems);
-  const totalAmount = useSelector(totalPriceSelector);
-  console.log(totalAmount);
+
   function navOrders() {
     if (cartItems.length > 0) {
       dispatch(addOrderThunk());
@@ -64,10 +46,7 @@ const CartPage = () => {
   }
 
   const calculateSubtotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.price * item.quantity,
-      0
-    );
+    return cartItems.reduce((total, item) => total + item.totalAmount, 0);
   };
 
   const calculateTotal = () => {
@@ -75,7 +54,6 @@ const CartPage = () => {
     const shipping = subtotal > 200 ? 0 : 15;
     return subtotal + shipping;
   };
-  console.log(cartItems);
 
   return (
     <>
@@ -99,20 +77,20 @@ const CartPage = () => {
               ) : (
                 cartItems.map((item) => (
                   <div
-                    key={item.id}
+                    key={item._id}
                     className="flex items-center border-b py-6 hover:bg-gray-50 transition"
                   >
                     <div className="w-24 h-24 mr-6 rounded-lg overflow-hidden">
                       <img
-                        src={item.data.image}
-                        alt={item.data.name}
+                        src={item.product.image}
+                        alt={item.product.title}
                         className="w-full h-full object-cover"
                       />
                     </div>
 
                     <div className="flex-grow">
                       <h3 className="font-semibold text-lg">
-                        {item.data.title}
+                        {item.product.title}
                       </h3>
                       <p className="text-gray-500 text-sm">
                         Color: {item.color} | Size: {item.size}
@@ -120,23 +98,32 @@ const CartPage = () => {
                       <div className="flex items-center mt-2">
                         <div className="flex items-center mr-4">
                           <button
-                            onClick={() => dispatch(removeCartItemThunk(item))}
+                            onClick={async () => {
+                              await dispatch(removeCartItemThunk(item._id)),
+                                setUpdateCartItems((prev) => !prev);
+                            }}
                             className="bg-gray-200 p-1 rounded-l-full"
                           >
                             <Minus size={16} />
                           </button>
                           <span className="px-4 py-1 bg-gray-100">
-                            {item.Qnt}
+                            {item.quantity}
                           </span>
                           <button
-                            onClick={() => dispatch(addToCartThunk(item))}
+                            onClick={async () => {
+                              await dispatch(addToCartThunk(item.product._id)),
+                                setUpdateCartItems((prev) => !prev);
+                            }}
                             className="bg-gray-200 p-1 rounded-r-full"
                           >
                             <Plus size={16} />
                           </button>
                         </div>
                         <button
-                          onClick={() => dispatch(removeCartItemThunk(item))}
+                          onClick={async () => {
+                            await dispatch(removeCartItemThunk(item._id)),
+                              setUpdateCartItems((prev) => !prev);
+                          }}
                           className="text-red-500 hover:text-red-700"
                         >
                           <Trash2 size={20} />
@@ -145,7 +132,7 @@ const CartPage = () => {
                     </div>
 
                     <div className="font-bold text-xl">
-                      ${(item.data.price * item.Qnt).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 ))
@@ -174,7 +161,7 @@ const CartPage = () => {
                 <div className="space-y-2 border-b pb-4">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${totalAmount.toFixed(2)}</span>
+                    <span>{calculateSubtotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="flex items-center">
@@ -195,7 +182,7 @@ const CartPage = () => {
                 {/* Total */}
                 <div className="flex justify-between font-bold text-xl">
                   <span>Total</span>
-                  <span>${(totalAmount + shipping).toFixed(2)}</span>
+                  <span>${calculateTotal().toFixed(2)}</span>
                 </div>
 
                 {/* Checkout Button */}

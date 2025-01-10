@@ -1,17 +1,10 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "./Navbar";
 import Carasoule from "./Carasoule";
 import Footer from "./Footer";
-import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../Config/firebasedb";
+import { Link } from "react-router-dom";
 import { addToCartThunk } from "../Redux/Reducers/Product.Reducer";
-import { useDispatch, useSelector } from "react-redux";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { toggelLogin } from "../Redux/Reducers/User.Reducer";
-import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { allProducts } from "../Redux/Reducers/Product.Reducer";
-
-import { fetchItem } from "../Redux/Reducers/Product.Reducer";
 
 import GridApp from "./Spinner";
 
@@ -19,44 +12,19 @@ const ECommerceLayout = () => {
   const [products, setProducts] = useState([]);
   const [results, setResults] = useState([]);
   const [activeCategory, setCategory] = useState("all");
-  const navigate = useNavigate();
-  // This is used to get data from firestore database on initial render
   const dispatch = useDispatch();
-  //   const activeCategory = useSelector(categorySelector);
-
-  function handleItem(item) {
-    dispatch(fetchItem(item));
-    navigate("/item");
-  }
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        dispatch(toggelLogin(true));
-      } else {
-        dispatch(toggelLogin(false));
-      }
-    });
-
-    return () => unsubscribe();
-  }, [dispatch]);
-
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, "products"), (querySnapshot) => {
-      //   console.log("Current data: ", querySnapshot.data());
-      const getExpenses = querySnapshot.docs.map((doc) => {
-        return {
-          id: doc.id,
-          data: doc.data(),
-        };
-      });
-      console.log(getExpenses);
-
-      setProducts(getExpenses);
-      setResults(getExpenses);
-      dispatch(allProducts(getExpenses));
-    });
+    fetch(
+      "https://shopsphere-backend-z0dv.onrender.com/api/shopsphere/product/products"
+    )
+      .then((res) => res.json())
+      .then((result) => {
+        setProducts(result.products);
+        setResults(result.products);
+        dispatch(allProducts(result.products));
+      })
+      .catch((error) => console.log(error));
   }, []);
 
   // Real time searching of products based on search text price range and catagory
@@ -68,9 +36,7 @@ const ECommerceLayout = () => {
       // Apply filters
       const filteredProducts = results.filter((product) => {
         const matchesCategory =
-          activeCategory == "all"
-            ? true
-            : activeCategory == product.data.category;
+          activeCategory == "all" ? true : activeCategory == product.category;
         console.log(matchesCategory);
 
         return matchesCategory;
@@ -101,7 +67,7 @@ const ECommerceLayout = () => {
           <div className="flex space-x-4">
             {categories.map((category) => (
               <button
-                key={category}
+                key={category.id}
                 className={`
                   px-4 py-2 rounded-full text-sm 
                   ${
@@ -123,28 +89,28 @@ const ECommerceLayout = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {products.map((item, index) => (
               <div
-                key={item}
+                key={item._id}
                 className="bg-gradient-to-br from-blue-200 to-purple-200 rounded-lg shadow-md p-4 hover:shadow-xl transition-shadow"
               >
-                <div
-                  onClick={() => handleItem(item)}
-                  className="aspect-square relative mb-4 ml-6"
-                >
-                  <img
-                    src={item.data.image}
-                    alt={item.data.title}
-                    className="object-fit w-[90%] h-[90%] rounded-md"
-                  />
-                </div>
-                <p className="font-semibold ">{item.data.title}</p>
+                <Link to={`/item/${item._id}`}>
+                  <div
+                    // onClick={() => handleItem(item._id)}
+                    className="aspect-square relative mb-4 ml-6"
+                  >
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="object-fit w-[90%] h-[90%] rounded-md"
+                    />
+                  </div>
+                </Link>
+                <p className="font-semibold ">{item.title}</p>
                 <p className="text-gray-600"></p>
                 <div className="flex justify-between items-center mt-4">
-                  <span className="text-blue-600 font-bold">
-                    ${item.data.price}
-                  </span>
+                  <span className="text-blue-600 font-bold">${item.price}</span>
                   <button
                     className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700"
-                    onClick={() => dispatch(addToCartThunk(item))}
+                    onClick={() => dispatch(addToCartThunk(item._id))}
                   >
                     Add to Cart
                   </button>

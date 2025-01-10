@@ -8,33 +8,50 @@ import {
   fetchCartItemsThunk,
   fetchOrdersThunk,
 } from "../Redux/Reducers/Product.Reducer";
+import { toggelLogin } from "../Redux/Reducers/User.Reducer";
 
 import SearchResults from "./SearchResults";
 import { productsSelector } from "../Redux/Reducers/Product.Reducer";
 function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  //   const [activeCategory, setActiveCategory] = useState("all");
+
   const [searchTerm, setSearchTerm] = useState("");
   const [searchedProducts, setSearchedProducts] = useState([]);
   const { isLoggedIn } = useSelector(userSelector);
-  console.log(isLoggedIn);
+
   const dispatch = useDispatch();
   const products = useSelector(productsSelector);
 
-  // const searchTerm = useSelector(searchSelector);
+  useEffect(() => {
+    async function loginStatus() {
+      const result = await fetch(
+        "https://shopsphere-backend-z0dv.onrender.com/api/shopsphere/user/isloggedin",
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (result.ok) {
+        dispatch(toggelLogin(true));
+      } else {
+        console.log("logout should be true");
+        dispatch(toggelLogin(false));
+      }
+    }
+    loginStatus();
+  }, []);
 
   // Real time searching of products based on search text price range and catagory
   useEffect(() => {
     if (!searchTerm) {
       // If no filters are applied, show all products
       setSearchedProducts([]);
-      console.log("no filters");
     } else {
       // Apply filters
       const filteredProducts = products.filter((product) => {
         const matchesSearch =
           !searchTerm.trim() ||
-          product.data.title.toLowerCase().includes(searchTerm.toLowerCase());
+          product.title.toLowerCase().includes(searchTerm.toLowerCase());
 
         return matchesSearch;
       });

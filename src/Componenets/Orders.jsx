@@ -15,24 +15,15 @@ import { orderSelector } from "../Redux/Reducers/Product.Reducer";
 import GridApp from "./Spinner";
 import { fetchOrdersThunk } from "../Redux/Reducers/Product.Reducer";
 const OrdersPage = () => {
-  const [activeFilter, setActiveFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true); // State to control spinner visibility
-  //   const dispatch = useDispatch();
-  //   useEffect(() => {
-  //     dispatch(fetchOrdersThunk());
-  //   }, []);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchOrdersThunk());
+  }, []);
 
   const neworders = useSelector(orderSelector);
-  console.log(neworders);
 
-  const orderStatuses = [
-    "All",
-    "Processing",
-    "Shipped",
-    "Delivered",
-    "Cancelled",
-  ];
   // This useEffect is for the spinner duration and message which shows
   useEffect(() => {
     // Set a timer to stop showing the spinner after a few seconds
@@ -44,27 +35,6 @@ const OrdersPage = () => {
     // Clear the timer if the component unmounts before timeout
     return () => clearTimeout(timer);
   }, []);
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Delivered":
-        return <Check className="text-green-500" />;
-      case "Shipped":
-        return <Truck className="text-blue-500" />;
-      case "Processing":
-        return <Clock className="text-yellow-500" />;
-      case "Cancelled":
-        return <X className="text-red-500" />;
-      default:
-        return <RefreshCw className="text-gray-500" />;
-    }
-  };
-
-  //   const filteredOrders = orders.filter(
-  //     (order) =>
-  //       (activeFilter === "All" || order.status === activeFilter) &&
-  //       order.id.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
 
   return (
     <>
@@ -111,90 +81,89 @@ const OrdersPage = () => {
           </div> */}
 
           {/* Orders List */}
-          {Object.entries(neworders).map(([date, items]) => (
-            <div className="space-y-6 mb-10">
-              {items.map((result) => (
-                <div
-                  key={date}
-                  className="bg-white shadow-lg rounded-2xl overflow-hidden"
-                >
-                  {/* Order Header */}
+          {neworders.map((items) => (
+            <div className="space-y-6 mb-10" key={items._id}>
+              <div
+                //
+                className="bg-white shadow-lg rounded-2xl overflow-hidden"
+              >
+                {/* Order Header */}
 
-                  <div className="flex justify-between items-center p-6 bg-gray-100">
-                    <div>
-                      <p className="text-gray-500">Order Number</p>
-                      <h3 className="font-bold">{result.orderId}</h3>
-                    </div>
+                <div className="flex justify-between items-center p-6 bg-gray-100">
+                  <div>
+                    <p className="text-gray-500">Order Number</p>
+                    <h3 className="font-bold">{items.orderId}</h3>
+                  </div>
+                  <div className="flex items-center space-x-2">
                     <div className="flex items-center space-x-2">
-                      <div className="flex items-center space-x-2">
-                        {/* {getStatusIcon(orderStatus)} */}
-                        <span className="font-semibold">
-                          {result.orderStatus}
-                        </span>
-                      </div>
-                      <span className="text-gray-500">|</span>
-                      <span>{date}</span>
+                      {/* {getStatusIcon(orderStatus)} */}
+                      <span className="font-semibold">{items.status}</span>
                     </div>
-                  </div>
-
-                  {/* Order Items */}
-                  <div className="p-6">
-                    <div className="space-y-4">
-                      {result.items.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-6 pb-4 
-                      border-b last:border-b-0"
-                        >
-                          <div className="w-24 h-24 rounded-lg overflow-hidden">
-                            <img
-                              src={item.data.image}
-                              alt={item.data.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-grow">
-                            <h4 className="font-semibold">{item.data.title}</h4>
-                            <p className="text-gray-500">
-                              Quantity: {item.Qnt}
-                            </p>
-                          </div>
-                          <div className="font-bold">
-                            ${(item.Qnt * item.data.price).toFixed(2)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex justify-end gap-10">
-                      <span className="flex items-center font-bold">
-                        <Truck className="mr-2 text-green-500" />
-                        Shipping
-                      </span>
-                      <span className="font-bold">$15.00</span>
-                    </div>
-                  </div>
-
-                  {/* Order Footer */}
-                  <div className="flex justify-between items-center p-6 bg-gray-100">
-                    <div>
-                      <p className="text-gray-500">Total Spent</p>
-                      <h3 className="font-bold text-xl">
-                        ${(result.totalAmount + 15).toFixed(2)}
-                      </h3>
-                    </div>
-                    <div className="space-x-4">
-                      <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">
-                        View Details
-                      </button>
-                      {"orderstatus" === "Processing" && (
-                        <button className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition">
-                          Cancel Order
-                        </button>
-                      )}
-                    </div>
+                    <span className="text-gray-500">|</span>
+                    <span>{new Date(items.createdAt).toLocaleString()}</span>
                   </div>
                 </div>
-              ))}
+
+                {/* Order Items */}
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {/* {result.items.map((item, index) => ( */}
+                    {items.items.map((item) => (
+                      <div
+                        key={item._id}
+                        className="flex items-center space-x-6 pb-4 
+                      border-b last:border-b-0"
+                      >
+                        <div className="w-24 h-24 rounded-lg overflow-hidden">
+                          <img
+                            src={item.product.image}
+                            alt={item.product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-grow">
+                          <h4 className="font-semibold">
+                            {item.product.title}
+                          </h4>
+                          <p className="text-gray-500">
+                            Quantity: {item.quantity}
+                          </p>
+                        </div>
+                        <div className="font-bold">
+                          ${(item.quantity * item.price).toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-10">
+                    <span className="flex items-center font-bold">
+                      <Truck className="mr-2 text-green-500" />
+                      Shipping
+                    </span>
+                    <span className="font-bold">$15.00</span>
+                  </div>
+                </div>
+
+                {/* Order Footer */}
+                <div className="flex justify-between items-center p-6 bg-gray-100">
+                  <div>
+                    <p className="text-gray-500">Total Spent</p>
+                    <h3 className="font-bold text-xl">
+                      ${(items.totalAmount + 15).toFixed(2)}
+                    </h3>
+                  </div>
+                  <div className="space-x-4">
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition">
+                      View Details
+                    </button>
+                    {"orderstatus" === "Processing" && (
+                      <button className="bg-red-500 text-white px-6 py-2 rounded-full hover:bg-red-600 transition">
+                        Cancel Order
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
 

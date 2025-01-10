@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { signOut } from "firebase/auth";
 const INITIAL_STATE = {
   isLoggedIn: true,
-  signIn: null,
+  signInToken: null,
   signOut: null,
 };
 
@@ -14,17 +14,36 @@ export const signInThunk = createAsyncThunk(
   "users/signIn",
   async (formData, { rejectWithValue }) => {
     try {
-      console.log("this is sign in thunk");
+      // console.log("this is sign in thunk");
 
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
+      // const userCredential = await signInWithEmailAndPassword(
+      //   auth,
+      //   formData.email,
+      //   formData.password
+      // );
+      // const user = userCredential.user;
+      const user = await fetch(
+        "https://shopsphere-backend-z0dv.onrender.com/api/shopsphere/user/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+          credentials: "include",
+        }
       );
-      const user = userCredential.user;
+      if (!user.ok) {
+        // Extract error message from backend
+        const errorData = await user.json();
+        throw new Error(errorData.error || "Something went wrong");
+      }
 
       // Return the userCredential object or just the user object
-      return userCredential;
+      return await user.json();
     } catch (error) {
       // Handle error
       toast.error(error.message);
@@ -38,7 +57,18 @@ export const signInThunk = createAsyncThunk(
 
 export const signOutThunk = createAsyncThunk("users/signOut", async () => {
   try {
-    return signOut(auth);
+    // return signOut(auth);
+    const logout = await fetch(
+      "https://shopsphere-backend-z0dv.onrender.com/api/shopsphere/user/logout",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        credentials: "include",
+      }
+    );
   } catch (error) {
     toast.error(error.message);
   }
@@ -56,7 +86,9 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(signInThunk.fulfilled, (state, action) => {
-      state.signIn = action.payload.user.uid;
+      console.log(action.payload.token);
+
+      state.signInToken = action.payload.token;
       state.isLoggedIn = true;
       toast.success("SignIn Successful");
     });
@@ -72,3 +104,4 @@ export const userReducer = userSlice.reducer;
 export const { signIn, logOut, toggelLogin } = userSlice.actions;
 
 export const userSelector = (state) => state.userReducer;
+export const tokenSelector = (state) => state.userReducer.signInToken;

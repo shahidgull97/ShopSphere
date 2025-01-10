@@ -7,30 +7,27 @@ function Carasoule() {
   // Carousel Images and Details
   const carouselItems = [
     {
-      image:
-        "https://images.pexels.com/photos/2536965/pexels-photo-2536965.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      image: "/Images/clothes.jpg",
       title: "Summer Fashion Sale",
       description: "Up to 50% off on latest trends",
       buttonText: "Shop Now",
     },
     {
-      image:
-        "https://images.pexels.com/photos/3550482/pexels-photo-3550482.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      image: "/Images/laptop1.jpg",
       title: "Electronics Mega Deal",
       description: "Incredible discounts on tech gadgets",
       buttonText: "Explore Deals",
     },
     {
-      image:
-        "https://images.pexels.com/photos/4210339/pexels-photo-4210339.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      image: "/Images/home.jpg",
       title: "Home Essentials Collection",
       description: "Upgrade your living space",
       buttonText: "Browse Collection",
     },
     {
       image: "/Images/apparel.jpg",
-      title: "Home Essentials Collection",
-      description: "Upgrade your living space",
+      title: "Chic & Carry Collection",
+      description: "Upgrade your Chic & Carry collection",
       buttonText: "Browse Collection",
     },
   ];
